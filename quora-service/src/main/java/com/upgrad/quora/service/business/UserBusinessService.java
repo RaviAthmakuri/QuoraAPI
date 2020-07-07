@@ -1,10 +1,9 @@
 package com.upgrad.quora.service.business;
 
-import com.upgrad.quora.service.entity.UserAuthentication;
 import com.upgrad.quora.service.dao.UserDao;
+import com.upgrad.quora.service.entity.UserAuthenticationEntity;
 import com.upgrad.quora.service.entity.UserEntity;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.SignUpRestrictedException;
+import com.upgrad.quora.service.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +41,7 @@ public class UserBusinessService {
 
     }
 
-    public UserAuthentication authenticateUser(String userName, String password) throws AuthenticationFailedException {
+    public UserAuthenticationEntity authenticateUser(String userName, String password) throws AuthenticationFailedException {
         UserEntity userByUserName = userDao.getUserByUserName(userName);
 
         if (userByUserName == null) {
@@ -54,17 +53,17 @@ public class UserBusinessService {
                 JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(encryptedPassword);
                 ZonedDateTime now = ZonedDateTime.now();
                 final ZonedDateTime expiresAt = now.plusHours(8);
-                UserAuthentication userAuthentication = new UserAuthentication();
-                userAuthentication.setUserEntity(userByUserName);
-                userAuthentication.setUuid(userByUserName.getUuid());
-                userAuthentication.setLoginAt(now);
-                userAuthentication.setExpiresAt(expiresAt);
-                userAuthentication.setAccessToken(jwtTokenProvider.
+                UserAuthenticationEntity userAuthenticationEntity = new UserAuthenticationEntity();
+                userAuthenticationEntity.setUserEntity(userByUserName);
+                userAuthenticationEntity.setUuid(userByUserName.getUuid());
+                userAuthenticationEntity.setLoginAt(now);
+                userAuthenticationEntity.setExpiresAt(expiresAt);
+                userAuthenticationEntity.setAccessToken(jwtTokenProvider.
                         generateToken(userByUserName.getUuid(), now, expiresAt));
 
-                userDao.persistUserAuth(userAuthentication);
+                userDao.persistUserAuth(userAuthenticationEntity);
 
-                return userAuthentication;
+                return userAuthenticationEntity;
 
             } else {
                 throw new AuthenticationFailedException("ATH-002", "Password failed");
@@ -75,5 +74,30 @@ public class UserBusinessService {
 
     }
 
+    public UserAuthenticationEntity updateLogoutUser(String accessToken) throws SignOutRestrictedException {
 
+        UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
+        if(userByToken == null){
+            throw new SignOutRestrictedException("SGR-001","User is not Signed in");
+        }
+        ZonedDateTime logOut;
+        logOut = ZonedDateTime.now();
+        userByToken.setLogoutAt(logOut);
+        userDao.updateUserAuth(userByToken);
+        return userByToken;
+    }
+
+    public UserEntity userProfile(String uuid, UserAuthenticationEntity userAuthEntity)
+            throws AuthorizationFailedException, UserNotFoundException {
+
+
+        UserEntity userEntity = userDao.getUserByUuid(uuid);
+        if (userAuthEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException(
+                    "ATHR-002", "User is signed out.Sign in first to get user details");
+        } else if (userEntity == null) {
+            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+        }
+        return userEntity;
+    }
 }

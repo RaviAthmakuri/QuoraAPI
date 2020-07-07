@@ -1,6 +1,8 @@
 package com.upgrad.quora.api.exception;
 
 import com.upgrad.quora.api.model.ErrorResponse;
+import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,31 @@ import org.springframework.web.context.request.WebRequest;
 public class ExceptionHandler {
 
     @org.springframework.web.bind.annotation.ExceptionHandler(SignUpRestrictedException.class)
-    public ResponseEntity<ErrorResponse> resouceNotFoundException(SignUpRestrictedException exc, WebRequest webRequest){
+    public ResponseEntity<ErrorResponse> signUpRestrictedException(
+            SignUpRestrictedException exc, WebRequest webRequest){
+        return new ResponseEntity<ErrorResponse>(
+                new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.CONFLICT );
+
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ErrorResponse> authenticationFailedException(
+            AuthenticationFailedException exc, WebRequest webRequest){
+
+        if(exc.getCode() == "ATH-001"){
+            return new ResponseEntity<ErrorResponse>(
+                    new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.BAD_REQUEST );
+        }else{
+            return new ResponseEntity<ErrorResponse>(
+                    new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.UNAUTHORIZED );
+        }
+
+
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(SignOutRestrictedException.class)
+    public ResponseEntity<ErrorResponse> signoutRestrictedException(
+            SignUpRestrictedException exc, WebRequest webRequest){
         return new ResponseEntity<ErrorResponse>(
                 new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.BAD_REQUEST );
 
