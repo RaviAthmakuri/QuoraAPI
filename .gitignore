@@ -24,12 +24,14 @@ out/
 *.ipr
 *.iws
 
+
 ##############################
 ## Eclipse
 ##############################
 .settings/
 bin/
 tmp/
+*/target/
 .metadata
 .classpath
 .project
