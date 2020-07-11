@@ -77,8 +77,8 @@ public class UserBusinessService {
     public UserAuthenticationEntity updateLogoutUser(String accessToken) throws SignOutRestrictedException {
 
         UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
-        if(userByToken == null){
-            throw new SignOutRestrictedException("SGR-001","User is not Signed in");
+        if (userByToken == null) {
+            throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
         }
         ZonedDateTime logOut;
         logOut = ZonedDateTime.now();
@@ -87,16 +87,27 @@ public class UserBusinessService {
         return userByToken;
     }
 
-    public UserEntity userProfile(String uuid, UserAuthenticationEntity userAuthEntity)
+    public UserEntity userProfile(String uuid, String accessToken)
             throws AuthorizationFailedException, UserNotFoundException {
 
+        UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
 
-        UserEntity userEntity = userDao.getUserByUuid(uuid);
-        if (userAuthEntity.getLogoutAt() != null) {
+        UserEntity userEntity;
+
+        if (userByToken == null) {
+
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+
+        } else if (userByToken.getLogoutAt() != null) {
+
             throw new AuthorizationFailedException(
                     "ATHR-002", "User is signed out.Sign in first to get user details");
-        } else if (userEntity == null) {
-            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+
+        } else {
+            userEntity = userDao.getUserByUuid(uuid);
+            if (userEntity == null) {
+                throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+            }
         }
         return userEntity;
     }

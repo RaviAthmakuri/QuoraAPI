@@ -1,9 +1,7 @@
 package com.upgrad.quora.api.exception;
 
 import com.upgrad.quora.api.model.ErrorResponse;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.SignOutRestrictedException;
-import com.upgrad.quora.service.exception.SignUpRestrictedException;
+import com.upgrad.quora.service.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,13 +31,32 @@ public class ExceptionHandler {
         }
 
 
+
     }
+
+
 
     @org.springframework.web.bind.annotation.ExceptionHandler(SignOutRestrictedException.class)
     public ResponseEntity<ErrorResponse> signoutRestrictedException(
             SignUpRestrictedException exc, WebRequest webRequest){
         return new ResponseEntity<ErrorResponse>(
                 new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.BAD_REQUEST );
+
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> usernotFoundException(
+            UserNotFoundException exc, WebRequest webRequest){
+        return new ResponseEntity<ErrorResponse>(
+                new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.NOT_FOUND );
+
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(AuthorizationFailedException.class)
+    public ResponseEntity<ErrorResponse> authorizationFailedException(
+            AuthorizationFailedException exc, WebRequest webRequest){
+        return new ResponseEntity<ErrorResponse>(
+                new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.FORBIDDEN );
 
     }
 }
