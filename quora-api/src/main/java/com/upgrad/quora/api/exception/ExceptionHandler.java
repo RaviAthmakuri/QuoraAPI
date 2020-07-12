@@ -59,4 +59,12 @@ public class ExceptionHandler {
                 new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.FORBIDDEN );
 
     }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(InvalidQuestionException.class)
+    public ResponseEntity<ErrorResponse> invalidQuestionException(
+            InvalidQuestionException exc, WebRequest webRequest){
+        return new ResponseEntity<ErrorResponse>(
+                new ErrorResponse().code(exc.getCode()).message(exc.getErrorMessage()),HttpStatus.NOT_FOUND );
+
+    }
 }

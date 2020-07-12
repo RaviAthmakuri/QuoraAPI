@@ -28,12 +28,22 @@ public class QuestionDao {
         }
     }
 
-        public List<QuestionEntity> getAllQuestion () {
+    public QuestionEntity editQuestion(QuestionEntity questionEntity) {
+        return entityManager.merge(questionEntity);
+    }
+
+    public List<QuestionEntity> getAllQuestion() {
+        try {
             List<QuestionEntity> questionEntities = entityManager
                     .createQuery("SELECT Q from QuestionEntity Q", QuestionEntity.class)
                     .getResultList();
-
             return questionEntities;
 
+        } catch (NoResultException nre) {
+            return null;
         }
+
     }
+
+
+}

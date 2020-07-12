@@ -51,12 +51,13 @@ public class QuestionEditResponse   {
   /**
    * status of the updated question
    * @return status
-  **/
+  *
+   * @param question_edited*/
   @ApiModelProperty(required = true, value = "status of the updated question")
   @NotNull
 
 
-  public String getStatus() {
+  public String getStatus(String question_edited) {
     return status;
   }
 
