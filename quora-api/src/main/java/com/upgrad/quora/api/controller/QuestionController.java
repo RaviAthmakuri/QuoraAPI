@@ -8,6 +8,7 @@ import com.upgrad.quora.service.entity.UserAuthenticationEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -91,6 +92,23 @@ public class QuestionController {
 
         return new ResponseEntity<QuestionEditResponse>(editedQuestion, HttpStatus.OK);
 
+
+    }
+
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/edit/{questionId}"
+            , produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDeleteResponse> deleteQuestion(
+            @RequestHeader("authorization") String authorization,
+            @PathVariable(value = "questionId") String questionId)
+            throws AuthorizationFailedException, InvalidQuestionException {
+
+        UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization);
+        QuestionEntity deteledQuestionEntity = questionBusinessService.deleteQuestion(questionId, userAuthenticationEntity.getUserEntity());
+        QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse()
+                .status("QUESTION DELETED")
+                .id(deteledQuestionEntity.getUuid());
+        return new ResponseEntity<QuestionDeleteResponse>(questionDeleteResponse, HttpStatus.OK);
 
     }
 

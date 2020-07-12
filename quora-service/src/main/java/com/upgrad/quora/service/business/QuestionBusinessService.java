@@ -72,5 +72,19 @@ public class QuestionBusinessService {
 
     }
 
+    public QuestionEntity deleteQuestion(String questionId,UserEntity userEntity) throws InvalidQuestionException, AuthorizationFailedException {
+        QuestionEntity questionEntity = CheckValidQuestion(questionId);
+
+        if(questionEntity.getUserEntity().getUuid() == userEntity.getUuid()){
+            QuestionEntity deleteQuestion = questionDao.deleteQuestion(questionEntity);
+            return deleteQuestion;
+        }else{
+            throw new AuthorizationFailedException("ATHR-003", "Only the question owner can edit the question");
+        }
+
+
+
+    }
+
 
 }
