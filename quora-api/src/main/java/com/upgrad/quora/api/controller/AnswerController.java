@@ -53,7 +53,7 @@ public class AnswerController {
 
         AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity, userAuthEntity);
         AnswerResponse answerResponse = new AnswerResponse().id(createdAnswer.getUuid()).
-                status("ANSWER CREATED");
+                status("CREATED - Answer created successfully");
 
         return new ResponseEntity<AnswerResponse>(answerResponse, HttpStatus.OK);
     }
@@ -70,8 +70,10 @@ public class AnswerController {
         checkedAnswer.setAnswer(answerEditRequest.getContent());
         AnswerEntity updatedAnswer = answerBusinessService.updateAnswer(checkedAnswer);
 
-        AnswerEditResponse answerEditResponse = new AnswerEditResponse().id(updatedAnswer.getUuid()).status("ANSWER EDITED");
-
+    AnswerEditResponse answerEditResponse =
+        new AnswerEditResponse()
+            .id(updatedAnswer.getUuid())
+            .status("OK - Answer changed successfully");
 
         return new ResponseEntity<AnswerEditResponse>(answerEditResponse,HttpStatus.OK);
     }
