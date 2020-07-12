@@ -23,9 +23,8 @@ out/
 *.iml
 *.ipr
 *.iws
-/quora-api/target/
-/quora-api/target/
-/quora-db/target/
+quora-db/target/
+quora-api/target/
 
 
 ##############################
