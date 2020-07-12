@@ -39,7 +39,7 @@ public class QuestionBusinessService {
 
   }
 
-    public QuestionEntity validateQuestion(String questionId) throws InvalidQuestionException {
+    public QuestionEntity CheckValidQuestion(String questionId) throws InvalidQuestionException {
         QuestionEntity questionEntity = questionDao.getQuestionByUuid(questionId);
         if(questionEntity==null) {
             throw new InvalidQuestionException("QUES-001","The question entered is invalid");

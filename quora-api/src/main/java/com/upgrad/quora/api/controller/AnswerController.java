@@ -38,7 +38,7 @@ public class AnswerController {
             throws AuthorizationFailedException, InvalidQuestionException {
 
         final UserAuthenticationEntity userAuthEntity = userAuthBusinessService.getUser(authorization);
-        QuestionEntity questionEntity = questionBusinessService.validateQuestion(questionId);
+        QuestionEntity questionEntity = questionBusinessService.CheckValidQuestion(questionId);
 
         UserEntity userEntity = userAuthEntity.getUser();
 
