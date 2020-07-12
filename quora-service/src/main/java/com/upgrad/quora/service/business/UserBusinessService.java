@@ -132,7 +132,14 @@ public class UserBusinessService {
             throw new AuthorizationFailedException("ATHR-002", "User is signed out");
         }
         throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+    }
 
-
+    @Transactional
+    public UserAuthenticationEntity getUser(final String authorizationToken) throws AuthorizationFailedException {
+        UserAuthenticationEntity userAuthEntity = userDao.getUserByToken(authorizationToken);
+        if (userAuthEntity == null) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
+        return userAuthEntity;
     }
 }

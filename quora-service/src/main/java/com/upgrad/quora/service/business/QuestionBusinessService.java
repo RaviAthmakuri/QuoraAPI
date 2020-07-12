@@ -5,6 +5,7 @@ import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthenticationEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,5 +38,13 @@ public class QuestionBusinessService {
       return questionDao.createQuestion(questionEntity);
 
   }
+
+    public QuestionEntity validateQuestion(String questionId) throws InvalidQuestionException {
+        QuestionEntity questionEntity = questionDao.getQuestionByUuid(questionId);
+        if(questionEntity==null) {
+            throw new InvalidQuestionException("QUES-001","The question entered is invalid");
+        }
+        return questionEntity;
+    }
 
 }
