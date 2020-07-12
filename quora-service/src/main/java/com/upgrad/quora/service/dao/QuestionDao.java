@@ -20,19 +20,20 @@ public class QuestionDao {
         return inQuestionEntity;
     }
 
-    public QuestionEntity getQuestionByUuid(String questionId){
+    public QuestionEntity getQuestionByUuid(String questionId) {
         try {
             return entityManager.createNamedQuery("questionByUuid", QuestionEntity.class).setParameter("questionId", questionId).getSingleResult();
         } catch (NoResultException nre) {
             return null;
         }
-
-    public List<QuestionEntity> getAllQuestion(){
-        List<QuestionEntity> questionEntities = entityManager
-                .createQuery("SELECT Q from QuestionEntity Q", QuestionEntity.class)
-                .getResultList();
-
-        return questionEntities;
-
     }
-}
+
+        public List<QuestionEntity> getAllQuestion () {
+            List<QuestionEntity> questionEntities = entityManager
+                    .createQuery("SELECT Q from QuestionEntity Q", QuestionEntity.class)
+                    .getResultList();
+
+            return questionEntities;
+
+        }
+    }
