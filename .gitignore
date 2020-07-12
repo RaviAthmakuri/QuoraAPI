@@ -74,3 +74,5 @@ quora-api/target/classes/.swagger-codegen-ignore
 *.class
 *.lst
 *.jar
+*.class
+quora-api/target/classes/com/upgrad/quora/api/model/QuestionEditResponse.class
