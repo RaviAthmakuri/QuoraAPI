@@ -87,4 +87,9 @@ public class QuestionBusinessService {
     }
 
 
+    public List<QuestionEntity> getAllQuestionbyUser(UserEntity user) {
+
+        return questionDao.getAllQuestionByUser(user.getUuid());
+
+    }
 }

@@ -112,14 +112,14 @@ public class UserBusinessService {
     public UserEntity userProfile(String uuid, String accessToken)
             throws AuthorizationFailedException, UserNotFoundException {
 
-        UserAuthenticationEntity userByToken = authorizeUser(accessToken);
-
         UserEntity userEntity;
         userEntity = userDao.getUserByUuid(uuid);
 
             if (userEntity == null) {
                 throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
             }
+
+        UserAuthenticationEntity userByToken = authorizeUser(accessToken);
 
         return userEntity;
     }

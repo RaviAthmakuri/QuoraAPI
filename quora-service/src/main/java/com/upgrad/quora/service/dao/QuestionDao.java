@@ -50,4 +50,17 @@ public class QuestionDao {
         return questionEntity;
     }
 
+    public List<QuestionEntity> getAllQuestionByUser(String uuid) {
+        try {
+            List<QuestionEntity> questionEntities = entityManager
+                    .createQuery("SELECT Q from QuestionEntity Q WHERE Q.userEntity.uuid = :uuid", QuestionEntity.class)
+                    .setParameter("uuid", uuid)
+                    .getResultList();
+
+            return questionEntities;
+
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
 }
