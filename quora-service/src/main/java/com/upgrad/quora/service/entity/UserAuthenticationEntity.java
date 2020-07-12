@@ -98,5 +98,8 @@ public class UserAuthenticationEntity {
         this.logoutAt = logoutAt;
     }
 
+    public UserEntity getUser() {
+        return userEntity;
+    }
 
 }

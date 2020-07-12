@@ -7,6 +7,11 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "question")
+@NamedQueries(
+        {
+                @NamedQuery(name = "questionByUuid", query = "select q from QuestionEntity q INNER JOIN UserEntity u on q.userEntity = u.id where q.uuid =:questionId")
+        }
+)
 public class QuestionEntity {
 
     @Id
