@@ -70,3 +70,7 @@ nb-configuration.xml
 /quora-api/target/
 /quora-api/target/
 /quora-db/target/
+quora-api/target/classes/.swagger-codegen-ignore
+*.class
+*.lst
+*.jar
