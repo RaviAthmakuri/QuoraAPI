@@ -22,6 +22,27 @@ public class UserBusinessService {
     @Autowired
     private UserDao userDao;
 
+    public UserAuthenticationEntity authorizeUser(final  String accessToken) throws AuthorizationFailedException {
+
+        UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
+
+        ;
+
+        if (userByToken == null) {
+
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+
+        } else if (userByToken.getLogoutAt() != null) {
+
+            throw new AuthorizationFailedException(
+                    "ATHR-002", "User is signed out.Sign in first to get user details");
+
+        }
+
+        return userByToken;
+
+    }
+
     public UserEntity createUser(final UserEntity userEntity) throws SignUpRestrictedException {
 
         if (userDao.getUserByUserName(userEntity.getUserName()) != null) {
@@ -91,25 +112,15 @@ public class UserBusinessService {
     public UserEntity userProfile(String uuid, String accessToken)
             throws AuthorizationFailedException, UserNotFoundException {
 
-        UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
+        UserAuthenticationEntity userByToken = authorizeUser(accessToken);
 
         UserEntity userEntity;
+        userEntity = userDao.getUserByUuid(uuid);
 
-        if (userByToken == null) {
-
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
-
-        } else if (userByToken.getLogoutAt() != null) {
-
-            throw new AuthorizationFailedException(
-                    "ATHR-002", "User is signed out.Sign in first to get user details");
-
-        } else {
-            userEntity = userDao.getUserByUuid(uuid);
             if (userEntity == null) {
                 throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
             }
-        }
+
         return userEntity;
     }
 

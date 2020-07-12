@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 public class QuestionBusinessService {
@@ -20,7 +22,8 @@ public class QuestionBusinessService {
     @Autowired
     UserDao userDao;
 
-  public QuestionEntity createQuestion(String accessToken,QuestionEntity questionEntity) throws AuthorizationFailedException {
+  public QuestionEntity createQuestion(String accessToken,QuestionEntity questionEntity)
+          throws AuthorizationFailedException {
       UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
 
       if (userByToken == null) {
@@ -39,6 +42,7 @@ public class QuestionBusinessService {
 
   }
 
+
     public QuestionEntity CheckValidQuestion(String questionId) throws InvalidQuestionException {
         QuestionEntity questionEntity = questionDao.getQuestionByUuid(questionId);
         if(questionEntity==null) {
@@ -46,5 +50,12 @@ public class QuestionBusinessService {
         }
         return questionEntity;
     }
+
+  public List<QuestionEntity> getAllQuestion(){
+
+        return questionDao.getAllQuestion();
+
+  }
+
 
 }

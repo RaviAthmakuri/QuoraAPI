@@ -13,7 +13,7 @@ import javax.validation.constraints.*;
  * UserDetailsResponse
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2020-07-05T11:18:30.035+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2020-07-12T10:53:03.172+05:30")
 
 public class UserDetailsResponse   {
   @JsonProperty("first_name")
@@ -98,7 +98,6 @@ public class UserDetailsResponse   {
 
   public void setUserName(String userName) {
     this.userName = userName;
-//      return this;
   }
 
   public UserDetailsResponse emailAddress(String emailAddress) {
