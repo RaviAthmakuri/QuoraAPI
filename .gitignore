@@ -87,3 +87,5 @@ quora-api/target/classes/.swagger-codegen-ignore
 *.class
 *.lst
 *.jar
+quora-api/target/classes/com/upgrad/quora/api/exception/ExceptionHandler.class
+quora-api/target/classes/com/upgrad/quora/api/exception/ExceptionHandler.class
