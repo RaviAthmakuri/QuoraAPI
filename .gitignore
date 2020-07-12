@@ -13,6 +13,9 @@ build/
 .gradletasknamecache
 gradle-app.setting
 !gradle-wrapper.jar
+*.class
+quora-db/target/
+quora-api/target/
 
 ##############################
 ## IntelliJ
@@ -45,6 +48,9 @@ tmp/
 local.properties
 .loadpath
 .factorypath
+*.class
+quora-db/target/
+quora-api/target/
 
 ##############################
 ## NetBeans
@@ -56,12 +62,18 @@ dist/
 nbdist/
 nbactions.xml
 nb-configuration.xml
+*.class
+quora-db/target/
+quora-api/target/
 
 ##############################
 ## Visual Studio Code
 ##############################
 .vscode/
 .code-workspace
+*.class
+quora-db/target/
+quora-api/target/
 
 ##############################
 ## OS X
@@ -75,6 +87,3 @@ quora-api/target/classes/.swagger-codegen-ignore
 *.class
 *.lst
 *.jar
-
-quora-api/target/classes/com/upgrad/quora/api/exception/ExceptionHandler.class
-quora-api/target/classes/com/upgrad/quora/api/model/QuestionEditResponse.class
