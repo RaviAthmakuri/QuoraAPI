@@ -35,7 +35,6 @@ public class ExceptionHandler {
     }
 
 
-
     @org.springframework.web.bind.annotation.ExceptionHandler(SignOutRestrictedException.class)
     public ResponseEntity<ErrorResponse> signoutRestrictedException(
             SignOutRestrictedException exc, WebRequest webRequest){

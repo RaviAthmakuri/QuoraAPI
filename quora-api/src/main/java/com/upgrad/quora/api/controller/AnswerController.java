@@ -29,6 +29,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/")
 public class AnswerController {
+
     @Autowired
     private AnswerBusinessService answerBusinessService;
 
@@ -41,7 +42,6 @@ public class AnswerController {
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/question/{questionId}/answer/create",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerResponse> createAnswer(
             @RequestHeader("authorization") final String authorization,
@@ -50,10 +50,8 @@ public class AnswerController {
             throws AuthorizationFailedException, InvalidQuestionException {
 
 
-        //  final UserAuthenticationEntity userAuthEntity = userAuthBusinessService.getUser(authorization);
-
         final UserAuthenticationEntity userAuthEntity =
-                userAuthBusinessService.authorizeUser(authorization);
+                userAuthBusinessService.authorizeUser(authorization,"CreateAnswer");
 
         QuestionEntity questionEntity = questionBusinessService.CheckValidQuestion(questionId);
 
@@ -66,62 +64,15 @@ public class AnswerController {
         answerEntity.setAnswer(answerRequest.getAnswer());
         answerEntity.setUser(userEntity);
 
-        AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity, userAuthEntity);
+        AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity);
         AnswerResponse answerResponse =
                 new AnswerResponse().id(createdAnswer.getUuid()).status("ANSWER CREATED");
 
         return new ResponseEntity<AnswerResponse>(answerResponse, HttpStatus.OK);
     }
 
-    @RequestMapping(
 
-            method = RequestMethod.DELETE,
-            path = "/answer/delete/{answerId}",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDeleteResponse> deleteAnswer(
-            @RequestHeader("authorization") final String authorization,
-            @PathVariable("answerId") final String answerId)
-            throws AuthorizationFailedException, AnswerNotFoundException {
-        // Authorize User, if user registered and Logged in?
-        final UserAuthenticationEntity userAuthEntity =
-                userAuthBusinessService.authorizeUser(authorization);
-
-        // Get the Logged In User Details
-        final UserEntity currentUser = userAuthEntity.getUser();
-
-        // Check if the USer is Admin Role
-        final boolean isAdminUser = "Admin".equalsIgnoreCase(currentUser.getRole());
-
-        // Load the current Answer to be Deleted.
-        AnswerEntity answerEntity = answerBusinessService.getAnswerEntity(answerId);
-
-        // Lets Check if the user is the Owner of this Answer
-        final boolean isAnswerOwner = currentUser.getUuid().equals(answerEntity.getUser().getUuid());
-
-        // Only a Admin User or the Answer Owner Can delete the Answer.
-        if (isAdminUser || isAnswerOwner) {
-
-            // Lets Delete the Answer
-            AnswerDeleteResponse answerDeleteResponse = null;
-            AnswerEntity deletedAnswer = this.answerBusinessService.deleteAnswer(answerEntity);
-            if (deletedAnswer == null) {
-                answerDeleteResponse =
-                        new AnswerDeleteResponse()
-                                .id(answerEntity.getUuid())
-                                .status("ANSWER COULD NOT BE DELETED");
-            } else {
-                answerDeleteResponse =
-                        new AnswerDeleteResponse().id(answerEntity.getUuid()).status("ANSWER DELETED");
-            }
-
-            return new ResponseEntity<AnswerDeleteResponse>(answerDeleteResponse, HttpStatus.OK);
-        }
-        throw new AuthorizationFailedException(
-                "ATHR-003", "Only the answer owner or admin can delete the answer");
-
-    }
-
-    @RequestMapping( method = RequestMethod.PUT,
+    @RequestMapping(method = RequestMethod.PUT,
             path = "/answer/edit/{answerId}",
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -131,19 +82,42 @@ public class AnswerController {
             final AnswerEditRequest answerEditRequest)
             throws AuthorizationFailedException, AnswerNotFoundException {
 
-        UserAuthenticationEntity userAuthEntity = userAuthBusinessService.authorizeUser(authorization);
+        UserAuthenticationEntity userAuthEntity = userAuthBusinessService.authorizeUser(authorization,"EditAnswer");
 
-        AnswerEntity answerEntity = answerBusinessService.getAnswerById(answerId);
-        AnswerEntity checkedAnswer =
-                answerBusinessService.verifyAnswerBelongsToUser(userAuthEntity, answerEntity);
 
-        checkedAnswer.setAnswer(answerEditRequest.getContent());
-        AnswerEntity updatedAnswer = answerBusinessService.updateAnswer(checkedAnswer);
+
+        AnswerEntity answerEntity = new AnswerEntity();
+        answerEntity.setUuid(answerId);
+        answerEntity.setAnswer(answerEditRequest.getContent());
+        answerEntity.setDate(ZonedDateTime.now());
+        AnswerEntity updatedAnswer = answerBusinessService.updateAnswer(answerEntity, userAuthEntity);
 
         AnswerEditResponse answerEditResponse =
                 new AnswerEditResponse().id(updatedAnswer.getUuid()).status("ANSWER EDITED");
 
         return new ResponseEntity<AnswerEditResponse>(answerEditResponse, HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            method = RequestMethod.DELETE,
+            path = "/answer/delete/{answerId}",
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<AnswerDeleteResponse> deleteAnswer(
+            @RequestHeader("authorization") final String authorization,
+            @PathVariable("answerId") final String answerId)
+            throws AuthorizationFailedException, AnswerNotFoundException {
+        // Authorize User, if user registered and Logged in?
+
+        final UserAuthenticationEntity userAuthEntity =
+                userAuthBusinessService.authorizeUser(authorization,"DeleteAnswer");
+
+        AnswerEntity deletedAnswer = answerBusinessService.deleteAnswer(answerId, userAuthEntity.getUserEntity());
+        AnswerDeleteResponse answerDeleteResponse =
+                new AnswerDeleteResponse().id(deletedAnswer.getUuid()).status("ANSWER DELETED");
+
+        return new ResponseEntity<AnswerDeleteResponse>(answerDeleteResponse, HttpStatus.OK);
+
+
     }
 
     @RequestMapping(
@@ -155,21 +129,20 @@ public class AnswerController {
             @PathVariable("questionId") final String questionId)
             throws AuthorizationFailedException, InvalidQuestionException {
 
-        UserAuthenticationEntity userAuthEntity = userAuthBusinessService.authorizeUser(authorization);
+        UserAuthenticationEntity userAuthEntity = userAuthBusinessService.authorizeUser(authorization,"GetAllAnswersToQuestion");
         QuestionEntity questionEntity = questionBusinessService.CheckValidQuestion(questionId);
 
-        ArrayList<AnswerDetailsResponse> list = new ArrayList<>();
-        ArrayList<AnswerEntity> answers =
-                (ArrayList) answerBusinessService.getAllAnswersToQuestion(questionId, userAuthEntity);
+        List<AnswerDetailsResponse> answerDetailsResponseList = new ArrayList<>();
+        List<AnswerEntity> answers = answerBusinessService.getAllAnswersToQuestion(questionId, userAuthEntity);
 
         for (AnswerEntity answer : answers) {
             AnswerDetailsResponse detailsResponse = new AnswerDetailsResponse();
             detailsResponse.setId(answer.getUuid());
             detailsResponse.setAnswerContent(answer.getAnswer());
             detailsResponse.setQuestionContent(questionEntity.getContent());
-            list.add(detailsResponse);
+            answerDetailsResponseList.add(detailsResponse);
         }
 
-        return new ResponseEntity<List<AnswerDetailsResponse>>(list, HttpStatus.OK);
+        return new ResponseEntity<List<AnswerDetailsResponse>>(answerDetailsResponseList, HttpStatus.OK);
     }
 }

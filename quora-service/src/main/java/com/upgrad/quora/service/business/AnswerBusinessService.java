@@ -21,13 +21,8 @@ public class AnswerBusinessService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public AnswerEntity createAnswer(
-            AnswerEntity answerEntity, UserAuthenticationEntity userAuthEntity)
+            AnswerEntity answerEntity)
             throws AuthorizationFailedException {
-
-        if (userAuthEntity.getLogoutAt() != null) {
-            throw new AuthorizationFailedException(
-                    "ATHR-002", "User is signed out.Sign in first to post an answer");
-        }
         return answerDao.createAnswer(answerEntity);
     }
 
@@ -40,31 +35,22 @@ public class AnswerBusinessService {
         return answerEntity;
     }
 
+
     @Transactional(propagation = Propagation.REQUIRED)
-    public AnswerEntity verifyAnswerBelongsToUser(
-            UserAuthenticationEntity userAuthEntity, AnswerEntity answerEntity)
-            throws AuthorizationFailedException {
+    public AnswerEntity updateAnswer(AnswerEntity InAnswerEntity, UserAuthenticationEntity userAuthenticationEntity)
+            throws AnswerNotFoundException, AuthorizationFailedException {
 
-        UserEntity userEntity = userAuthEntity.getUser();
+        AnswerEntity answerEntity = getAnswerById(InAnswerEntity.getUuid());
 
-        if (userAuthEntity.getLogoutAt() != null) {
-            throw new AuthorizationFailedException(
-                    "ATHR-002", "User is signed out.Sign in first to edit an answer");
-        }
-        String auuid = answerEntity.getUuid();
-        String uuuid = userEntity.getUuid();
-        AnswerEntity checkedAnswer = answerDao.verifyAnswerBelongsToUser(auuid, uuuid);
-        if (checkedAnswer == null) {
+        answerEntity.setDate(InAnswerEntity.getDate());
+        answerEntity.setAnswer(InAnswerEntity.getAnswer());
+        if (answerEntity.getUser().getUuid() == userAuthenticationEntity.getUser().getUuid()) {
+            AnswerEntity updateAnswer = answerDao.updateAnswer(answerEntity);
+            return updateAnswer;
+        } else {
             throw new AuthorizationFailedException(
                     "ATHR-003", "Only the answer owner can edit or delete the answer");
         }
-        return checkedAnswer;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    public AnswerEntity updateAnswer(AnswerEntity answerEntity) {
-        AnswerEntity updateAnswer = answerDao.updateAnswer(answerEntity);
-        return updateAnswer;
     }
 
     public List<AnswerEntity> getAllAnswersToQuestion(
@@ -79,13 +65,20 @@ public class AnswerBusinessService {
     }
 
 
-    public AnswerEntity getAnswerEntity(String answer_uuId)
-            throws AnswerNotFoundException {
-        return answerDao.loadAnswer(answer_uuId);
-    }
-
     @Transactional
-    public AnswerEntity deleteAnswer(AnswerEntity answerEntity) {
-        return answerDao.deleteAnswer(answerEntity);
+    public AnswerEntity deleteAnswer(String answerId, UserEntity userEntity)
+            throws AnswerNotFoundException, AuthorizationFailedException {
+
+        AnswerEntity answerEntity = getAnswerById(answerId);
+        // Lets Check if the user is the Owner of this Answer
+        final boolean isAnswerOwner = answerEntity.getUser().getUuid().equals(userEntity.getUuid());
+        // Check if the USer is Admin Role
+        final boolean isAdminUser = userEntity.getRole().equalsIgnoreCase("admin");
+        if ((isAnswerOwner)  || (isAdminUser)) {
+            return answerDao.deleteAnswer(answerEntity);
+        } else {
+            throw new AuthorizationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
+        }
+
     }
 }

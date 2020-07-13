@@ -35,7 +35,7 @@ public class QuestionBusinessService {
         } else if (userByToken.getLogoutAt() != null) {
 
             throw new AuthorizationFailedException(
-                    "ATHR-002", "User is signed out.Sign in first to get user details");
+                    "ATHR-002", "User is signed out.Sign in first to post a question");
 
         }
         questionEntity.setUserEntity(userByToken.getUserEntity());
@@ -74,8 +74,9 @@ public class QuestionBusinessService {
 
     public QuestionEntity deleteQuestion(String questionId,UserEntity userEntity) throws InvalidQuestionException, AuthorizationFailedException {
         QuestionEntity questionEntity = CheckValidQuestion(questionId);
-
-        if(questionEntity.getUserEntity().getUuid() == userEntity.getUuid()){
+        final boolean isAnswerOwner = questionEntity.getUserEntity().getUuid().equals(userEntity.getUuid());
+        final boolean isAdminUser = userEntity.getRole().equalsIgnoreCase("admin");
+        if(isAnswerOwner || isAdminUser){
             QuestionEntity deleteQuestion = questionDao.deleteQuestion(questionEntity);
             return deleteQuestion;
         }else{

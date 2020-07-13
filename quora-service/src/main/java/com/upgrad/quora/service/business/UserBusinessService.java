@@ -22,11 +22,11 @@ public class UserBusinessService {
     @Autowired
     private UserDao userDao;
 
-    public UserAuthenticationEntity authorizeUser(final String accessToken) throws AuthorizationFailedException {
+    public UserAuthenticationEntity authorizeUser(final String accessToken, String detailType)
+            throws AuthorizationFailedException {
 
         UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
 
-        ;
 
         if (userByToken == null) {
 
@@ -34,8 +34,28 @@ public class UserBusinessService {
 
         } else if (userByToken.getLogoutAt() != null) {
 
-            throw new AuthorizationFailedException(
-                    "ATHR-002", "User is signed out.Sign in first to get user details");
+            if (detailType.equalsIgnoreCase("UserDetails")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
+            } else if (detailType.equalsIgnoreCase("CreateQuestion")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post a question");
+            } else if (detailType.equalsIgnoreCase("GetAllQuestions")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all questions");
+            } else if (detailType.equalsIgnoreCase("EditQuestion")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit the question");
+            } else if (detailType.equalsIgnoreCase("DeleteQuestion")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete a question");
+            } else if (detailType.equalsIgnoreCase("GetAllQuestionsByUser")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all questions posted by a specific user");
+            } else if (detailType.equalsIgnoreCase("CreateAnswer")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post a question");
+            } else if (detailType.equalsIgnoreCase("EditAnswer")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit an answer");
+            } else if (detailType.equalsIgnoreCase("DeleteAnswer")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete an answer");
+            } else if (detailType.equalsIgnoreCase("GetAllAnswersToQuestion")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get the answers");
+            }
+
 
         }
 
@@ -112,7 +132,7 @@ public class UserBusinessService {
     public UserEntity userProfile(String uuid, String accessToken)
             throws AuthorizationFailedException, UserNotFoundException {
 
-        UserAuthenticationEntity userByToken = authorizeUser(accessToken);
+        UserAuthenticationEntity userByToken = authorizeUser(accessToken, "UserDetails");
 
         UserEntity userEntity;
         userEntity = userDao.getUserByUuid(uuid);
@@ -126,7 +146,8 @@ public class UserBusinessService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity deleteUser(String uuid, String authorization) throws UserNotFoundException, AuthorizationFailedException {
+    public UserEntity deleteUser(String uuid, String authorization)
+            throws UserNotFoundException, AuthorizationFailedException {
         UserAuthenticationEntity userAuthEntity = userDao.getUserByToken(authorization);
         if (userAuthEntity != null) {
             if ((userAuthEntity.getLogoutAt() == null)) {
@@ -137,12 +158,17 @@ public class UserBusinessService {
                 String role = userAuthEntity.getUser().getRole();
                 if (role.equalsIgnoreCase("admin")) {
                     userDao.deleteUser(userEntity);
+                } else {
+                    throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
                 }
-                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+                return userEntity;
+            } else {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out");
             }
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out");
+        } else {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
         }
-        throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+
     }
 
     @Transactional

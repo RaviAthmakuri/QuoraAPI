@@ -53,7 +53,7 @@ public class QuestionController {
             @RequestHeader("authorization") String authorization)
             throws AuthorizationFailedException {
 
-        userBusinessService.authorizeUser(authorization);
+        userBusinessService.authorizeUser(authorization,"GetAllQuestions");
         List<QuestionEntity> questionEntities = questionBusinessService.getAllQuestion();
         return getListResponseEntity(questionEntities);
 
@@ -66,7 +66,7 @@ public class QuestionController {
             @PathVariable(value = "questionId") String questionId
             , QuestionEditRequest questionEditRequest) throws AuthorizationFailedException, InvalidQuestionException {
 
-        UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization);
+        UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization,"EditQuestion");
         QuestionEntity questionEntity = new QuestionEntity();
         questionEntity.setUuid(questionId);
         questionEntity.setContent(questionEditRequest.getContent());
@@ -80,13 +80,13 @@ public class QuestionController {
     }
 
 
-    @RequestMapping(method = RequestMethod.DELETE, path = "/edit/{questionId}"
+    @RequestMapping(method = RequestMethod.DELETE, path = "/delete/{questionId}"
             , produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionDeleteResponse> deleteQuestion(
             @RequestHeader("authorization") String authorization,
             @PathVariable(value = "questionId") String questionId)
             throws AuthorizationFailedException, InvalidQuestionException {
-        UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization);
+        UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization,"DeleteQuestion");
         QuestionEntity deteledQuestionEntity = questionBusinessService.deleteQuestion(questionId, userAuthenticationEntity.getUserEntity());
         QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse()
                 .status("QUESTION DELETED")
@@ -98,12 +98,13 @@ public class QuestionController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/all/{userId}"
             , produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestionsByUser(
             @RequestHeader("authorization") String authorization
             , @PathVariable(name = "userId") String userId)
             throws AuthorizationFailedException, UserNotFoundException {
 
-        UserEntity user = userBusinessService.userProfile(userId, authorization);
+        UserAuthenticationEntity userAuthenticationEntity =  userBusinessService.authorizeUser(authorization, "GetAllQuestionsByUser");
+        UserEntity user = userBusinessService.userProfile(userId,authorization);
 
         List<QuestionEntity> questionsByUser = questionBusinessService.getAllQuestionbyUser(user);
 
@@ -115,7 +116,7 @@ public class QuestionController {
         List<QuestionDetailsResponse> questionDetailsResponses = new ArrayList<>();
         ListIterator<QuestionEntity> questionEntityListIterator = questionsByUser.listIterator();
         while (questionEntityListIterator.hasNext()) {
-            QuestionEntity questionEntity = questionEntityListIterator.next();
+            QuestionEntity questionEntity = questionEntityListIterator. next();
             QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse()
                     .content(questionEntity.getContent())
                     .id(questionEntity.getUuid());
