@@ -27,7 +27,7 @@ public class AnswerDao {
     try {
       answerEntity =
           entityManager
-              .createNamedQuery("getAnswerFromId", AnswerEntity.class)
+              .createNamedQuery("getAnswerById", AnswerEntity.class)
               .setParameter("uuid", answerId)
               .getSingleResult();
     } catch (NoResultException e) {
