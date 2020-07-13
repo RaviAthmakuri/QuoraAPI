@@ -5,8 +5,10 @@ import com.upgrad.quora.service.business.QuestionBusinessService;
 import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthenticationEntity;
+import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,22 +54,8 @@ public class QuestionController {
             throws AuthorizationFailedException {
 
         userBusinessService.authorizeUser(authorization);
-
         List<QuestionEntity> questionEntities = questionBusinessService.getAllQuestion();
-
-        List<QuestionDetailsResponse> questionDetailsResponses = new ArrayList<>();
-
-        ListIterator<QuestionEntity> questionEntityListIterator = questionEntities.listIterator();
-
-        while (questionEntityListIterator.hasNext()) {
-            QuestionEntity questionEntity = questionEntityListIterator.next();
-            QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse()
-                    .content(questionEntity.getContent())
-                    .id(questionEntity.getUuid());
-            questionDetailsResponses.add(questionDetailsResponse);
-        }
-
-        return new ResponseEntity<List<QuestionDetailsResponse>>(questionDetailsResponses, HttpStatus.OK);
+        return getListResponseEntity(questionEntities);
 
     }
 
@@ -80,12 +68,9 @@ public class QuestionController {
 
         UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization);
         QuestionEntity questionEntity = new QuestionEntity();
-
         questionEntity.setUuid(questionId);
         questionEntity.setContent(questionEditRequest.getContent());
-
         QuestionEntity updatedQuestionEntity = questionBusinessService.editQuestion(questionEntity, userAuthenticationEntity.getUserEntity());
-
         QuestionEditResponse editedQuestion = new QuestionEditResponse().id(updatedQuestionEntity.getUuid())
                 .status("QUESTION EDITED");
 
@@ -93,5 +78,52 @@ public class QuestionController {
 
 
     }
+
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/edit/{questionId}"
+            , produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDeleteResponse> deleteQuestion(
+            @RequestHeader("authorization") String authorization,
+            @PathVariable(value = "questionId") String questionId)
+            throws AuthorizationFailedException, InvalidQuestionException {
+        UserAuthenticationEntity userAuthenticationEntity = userBusinessService.authorizeUser(authorization);
+        QuestionEntity deteledQuestionEntity = questionBusinessService.deleteQuestion(questionId, userAuthenticationEntity.getUserEntity());
+        QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse()
+                .status("QUESTION DELETED")
+                .id(deteledQuestionEntity.getUuid());
+        return new ResponseEntity<QuestionDeleteResponse>(questionDeleteResponse, HttpStatus.OK);
+
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, path = "/all/{userId}"
+            , produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(
+            @RequestHeader("authorization") String authorization
+            , @PathVariable(name = "userId") String userId)
+            throws AuthorizationFailedException, UserNotFoundException {
+
+        UserEntity user = userBusinessService.userProfile(userId, authorization);
+
+        List<QuestionEntity> questionsByUser = questionBusinessService.getAllQuestionbyUser(user);
+
+        return getListResponseEntity(questionsByUser);
+
+    }
+
+    private ResponseEntity<List<QuestionDetailsResponse>> getListResponseEntity(List<QuestionEntity> questionsByUser) {
+        List<QuestionDetailsResponse> questionDetailsResponses = new ArrayList<>();
+        ListIterator<QuestionEntity> questionEntityListIterator = questionsByUser.listIterator();
+        while (questionEntityListIterator.hasNext()) {
+            QuestionEntity questionEntity = questionEntityListIterator.next();
+            QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse()
+                    .content(questionEntity.getContent())
+                    .id(questionEntity.getUuid());
+            questionDetailsResponses.add(questionDetailsResponse);
+        }
+
+        return new ResponseEntity<List<QuestionDetailsResponse>>(questionDetailsResponses, HttpStatus.OK);
+    }
+
 
 }

@@ -22,7 +22,7 @@ public class UserBusinessService {
     @Autowired
     private UserDao userDao;
 
-    public UserAuthenticationEntity authorizeUser(final  String accessToken) throws AuthorizationFailedException {
+    public UserAuthenticationEntity authorizeUser(final String accessToken) throws AuthorizationFailedException {
 
         UserAuthenticationEntity userByToken = userDao.getUserByToken(accessToken);
 
@@ -117,9 +117,10 @@ public class UserBusinessService {
         UserEntity userEntity;
         userEntity = userDao.getUserByUuid(uuid);
 
-            if (userEntity == null) {
-                throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
-            }
+        if (userEntity == null) {
+            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+        }
+
 
         return userEntity;
     }
@@ -133,9 +134,8 @@ public class UserBusinessService {
                 if (userEntity == null) {
                     throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
                 }
-                String role = userEntity.getRole();
-                if(role.equalsIgnoreCase("admin"))
-                {
+                String role = userAuthEntity.getUser().getRole();
+                if (role.equalsIgnoreCase("admin")) {
                     userDao.deleteUser(userEntity);
                 }
                 throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
