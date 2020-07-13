@@ -73,6 +73,17 @@ public class AnswerBusinessService {
       throw new AuthorizationFailedException(
           "ATHR-002", "User is signed out.Sign in first to get the answers");
     }
+
+
+    public AnswerEntity getAnswerEntity(String answer_uuId)  throws AnswerNotFoundException {
+        return answerDao.loadAnswer(answer_uuId);
+    }
+
+    @Transactional
+    public AnswerEntity deleteAnswer(AnswerEntity answerEntity) {
+        return answerDao.deleteAnswer(answerEntity);
+    }
+
     return answerDao.getAllAnswersToQuestion(questionId);
   }
 }
