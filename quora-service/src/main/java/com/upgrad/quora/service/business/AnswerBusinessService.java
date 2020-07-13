@@ -24,4 +24,13 @@ public class AnswerBusinessService {
         }
         return answerDao.createAnswer(answerEntity);
     }
+
+    public AnswerEntity getAnswerEntity(String answer_uuId)  throws AnswerNotFoundException {
+        return answerDao.loadAnswer(answer_uuId);
+    }
+
+    @Transactional
+    public AnswerEntity deleteAnswer(AnswerEntity answerEntity) {
+        return answerDao.deleteAnswer(answerEntity);
+    }
 }
